@@ -1,0 +1,12 @@
+[package]
+name = "gtsp"
+version = "0.1.0"
+edition = "2021"
+msrv = "1.74"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.86"
+itertools = "0.13.0"
+rand = { version = "0.8.5", features = ["small_rng"] }
