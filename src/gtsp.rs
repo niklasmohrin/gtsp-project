@@ -1,7 +1,7 @@
 use std::{
     io::BufRead,
     iter::{self, Sum},
-    ops::{Add, Range, RangeInclusive, Sub},
+    ops::{Add, Sub},
     str::FromStr,
 };
 
@@ -14,7 +14,7 @@ use crate::{Move, MoveNeighborhood, Problem};
 pub trait Ring: Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum {}
 impl<T: Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum> Ring for T {}
 
-pub struct Instance<R> {
+pub struct GtspProblem<R> {
     number_of_vertices: usize,
     clusters: Vec<Vec<usize>>,
     is_symmetric: bool,
@@ -22,7 +22,7 @@ pub struct Instance<R> {
     dist: Vec<Vec<R>>,
 }
 
-impl<R> Instance<R>
+impl<R> GtspProblem<R>
 where
     R: FromStr,
     <R as FromStr>::Err: std::error::Error + Send + Sync + 'static,
@@ -93,7 +93,7 @@ where
     }
 }
 
-impl<R> Instance<R> {
+impl<R> GtspProblem<R> {
     pub fn dist(&self, u: usize, v: usize) -> R
     where
         R: Copy,
@@ -135,9 +135,9 @@ impl<R: Ring> Solution<R> {
     pub fn new(problem: &GtspProblem<R>, tour: Vec<usize>) -> Self {
         let weight = tour
             .windows(2)
-            .map(|win| problem.instance().dist(win[0], win[1]))
+            .map(|win| problem.dist(win[0], win[1]))
             .sum::<R>()
-            + problem.instance().dist(tour[tour.len() - 1], tour[0]);
+            + problem.dist(tour[tour.len() - 1], tour[0]);
 
         Self { weight, tour }
     }
@@ -152,22 +152,12 @@ impl<R: Ring> Solution<R> {
         range
             .tuple_windows()
             .map(|(a, b)| {
-                problem.instance().dist(
+                problem.dist(
                     self.tour[a % self.tour.len()],
                     self.tour[b % self.tour.len()],
                 )
             })
             .sum()
-    }
-}
-
-pub struct GtspProblem<R> {
-    pub instance: Instance<R>,
-}
-
-impl<R> GtspProblem<R> {
-    pub fn instance(&self) -> &Instance<R> {
-        &self.instance
     }
 }
 
@@ -183,8 +173,7 @@ impl<R: Ring> Problem for GtspProblem<R> {
     fn make_intial_solution(&self, mut rng: impl Rng) -> Self::Solution {
         Solution::new(
             self,
-            self.instance()
-                .clusters
+            self.clusters
                 .iter()
                 .map(|c| *c.choose(&mut rng).expect("cluster was empty"))
                 .collect(),

@@ -1,7 +1,7 @@
 use std::io;
 
 use gtsp::{
-    gtsp::{GtspProblem, Instance, TwoOptNeighborhood},
+    gtsp::{GtspProblem, TwoOptNeighborhood},
     localsearch::LocalSearch,
     MetaHeuristic,
 };
@@ -9,8 +9,7 @@ use rand::{rngs::SmallRng, SeedableRng};
 
 fn main() -> anyhow::Result<()> {
     let stdin = io::stdin().lock();
-    let instance = Instance::<i64>::read_from_text(stdin)?;
-    let problem = GtspProblem { instance };
+    let problem = GtspProblem::<i64>::read_from_text(stdin)?;
 
     let mut rng = SmallRng::seed_from_u64(42);
     for _ in 0..10 {
