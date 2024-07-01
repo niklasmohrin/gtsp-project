@@ -1,7 +1,7 @@
 use std::io;
 
 use gtsp::{
-    gtsp::{GtspProblem, TwoOptNeighborhood},
+    gtsp::{neighborhoods::TwoOptNeighborhood, GtspProblem},
     localsearch::LocalSearch,
     MetaHeuristic,
 };
