@@ -1,4 +1,5 @@
 use std::{
+    fmt::Debug,
     io::BufRead,
     iter::Sum,
     ops::{Add, Sub},
@@ -13,8 +14,11 @@ use crate::Problem;
 
 pub mod neighborhoods;
 
-pub trait Ring: Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum {}
-impl<T: Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum> Ring for T {}
+pub trait Ring:
+    Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum
+{
+}
+impl<T: Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum> Ring for T {}
 
 pub struct GtspProblem<R> {
     number_of_vertices: usize,
@@ -100,6 +104,7 @@ impl<R> GtspProblem<R> {
     where
         R: Copy,
     {
+        debug_assert_ne!(u, v);
         self.dist[u][v]
     }
     pub fn number_of_vertices(&self) -> usize {
@@ -110,7 +115,7 @@ impl<R> GtspProblem<R> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Solution<R> {
     weight: R,
     tour: Vec<usize>,
@@ -135,30 +140,41 @@ where
 
 impl<R: Ring> Solution<R> {
     pub fn new(problem: &GtspProblem<R>, tour: Vec<usize>) -> Self {
-        let weight = tour
-            .windows(2)
-            .map(|win| problem.dist(win[0], win[1]))
-            .sum::<R>()
-            + problem.dist(tour[tour.len() - 1], tour[0]);
-
-        Self { weight, tour }
+        let mut this = Self {
+            tour,
+            weight: 0.into(),
+        };
+        this.weight = this.forward_cost(problem, 0..=this.tour.len());
+        this
     }
-    pub fn weight(&self) -> &R {
-        &self.weight
+    pub fn weight(&self) -> R {
+        self.weight
     }
     pub fn tour(&self) -> &[usize] {
         self.tour.as_ref()
     }
 
-    pub fn forward_cost(&self, problem: &GtspProblem<R>, range: impl Iterator<Item = usize>) -> R {
+    pub fn assert_weight(self, w: R) -> Self {
+        assert_eq!(self.weight, w);
+        self
+    }
+
+    pub fn arc_cost(&self, problem: &GtspProblem<R>, i: usize, j: usize) -> R {
+        problem.dist(
+            self.tour[i % self.tour.len()],
+            self.tour[j % self.tour.len()],
+        )
+    }
+
+    pub fn forward_cost(
+        &self,
+        problem: &GtspProblem<R>,
+        range: impl IntoIterator<Item = usize>,
+    ) -> R {
         range
+            .into_iter()
             .tuple_windows()
-            .map(|(a, b)| {
-                problem.dist(
-                    self.tour[a % self.tour.len()],
-                    self.tour[b % self.tour.len()],
-                )
-            })
+            .map(|(i, j)| self.arc_cost(problem, i, j))
             .sum()
     }
 }
@@ -169,7 +185,7 @@ impl<R: Ring> Problem for GtspProblem<R> {
     type Solution = Solution<R>;
 
     fn score(solution: &Self::Solution) -> Self::Score {
-        *solution.weight()
+        solution.weight()
     }
 
     fn make_intial_solution(&self, mut rng: impl Rng) -> Self::Solution {

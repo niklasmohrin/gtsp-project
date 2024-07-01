@@ -36,7 +36,7 @@ impl<'p, R: Ring> Move<GtspProblem<R>> for TwoOptMove<'p, R> {
 
         let mut tour = self.current.tour().to_owned();
         tour[j..k].reverse();
-        Solution::new(self.problem, tour)
+        Solution::new(self.problem, tour).assert_weight(self.current.weight - self.score_increase())
     }
 }
 
