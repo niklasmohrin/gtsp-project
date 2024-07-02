@@ -2,7 +2,7 @@ use std::{
     fmt::Debug,
     io::BufRead,
     iter::Sum,
-    ops::{Add, Sub},
+    ops::{Add, Neg, Sub},
     str::FromStr,
 };
 
@@ -15,10 +15,21 @@ use crate::Problem;
 pub mod neighborhoods;
 
 pub trait Ring:
-    Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum
+    Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Neg<Output = Self> + Sum
 {
 }
-impl<T: Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Sum> Ring for T {}
+impl<
+        T: Debug
+            + Copy
+            + Ord
+            + From<u8>
+            + Add<Output = Self>
+            + Sub<Output = Self>
+            + Neg<Output = Self>
+            + Sum,
+    > Ring for T
+{
+}
 
 pub struct GtspProblem<R> {
     number_of_vertices: usize,
@@ -115,7 +126,7 @@ impl<R> GtspProblem<R> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Solution<R> {
     weight: R,
     tour: Vec<usize>,
@@ -185,7 +196,7 @@ impl<R: Ring> Problem for GtspProblem<R> {
     type Solution = Solution<R>;
 
     fn score(solution: &Self::Solution) -> Self::Score {
-        solution.weight()
+        -solution.weight()
     }
 
     fn make_intial_solution(&self, mut rng: impl Rng) -> Self::Solution {

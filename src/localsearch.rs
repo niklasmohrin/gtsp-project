@@ -9,12 +9,21 @@ pub struct LocalSearch<P, N> {
     _n: PhantomData<N>,
 }
 
+impl<P, N> LocalSearch<P, N> {
+    pub fn new() -> Self {
+        Self {
+            _p: PhantomData,
+            _n: PhantomData,
+        }
+    }
+}
+
 impl<P, N> MetaHeuristic<P> for LocalSearch<P, N>
 where
     P: Problem,
     N: MoveNeighborhood<P>,
 {
-    fn run(instance: &P, rng: impl Rng) -> P::Solution {
+    fn run(self, instance: &P, rng: impl Rng) -> P::Solution {
         let mut best = instance.make_intial_solution(rng);
 
         while let Some(new_best) = N::moves_iter(instance, &best)
