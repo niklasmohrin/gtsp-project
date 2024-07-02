@@ -58,10 +58,10 @@ fn main() -> anyhow::Result<()> {
     let best = (0..args.tries)
         .map(|_| match (args.algorithm, args.neighborhood) {
             (AlgorithmChoice::Local, NeighborhoodChoice::TwoOpt) => {
-                LocalSearch::<_, TwoOptNeighborhood>::new().run(&problem, &mut rng)
+                LocalSearch::<TwoOptNeighborhood>::new().run(&problem, &mut rng)
             }
             (AlgorithmChoice::Local, NeighborhoodChoice::Swap) => {
-                LocalSearch::<_, SwapNeighborhood>::new().run(&problem, &mut rng)
+                LocalSearch::<SwapNeighborhood>::new().run(&problem, &mut rng)
             }
             (AlgorithmChoice::Tabu, NeighborhoodChoice::TwoOpt) => {
                 TabuSearch::<TwoOptNeighborhood>::new(args.termination).run(&problem, &mut rng)

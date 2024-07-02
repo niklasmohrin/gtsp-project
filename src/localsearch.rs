@@ -4,21 +4,17 @@ use rand::Rng;
 
 use crate::{MetaHeuristic, Move, MoveNeighborhood, Problem};
 
-pub struct LocalSearch<P, N> {
-    _p: PhantomData<P>,
+pub struct LocalSearch<N> {
     _n: PhantomData<N>,
 }
 
-impl<P, N> LocalSearch<P, N> {
+impl<N> LocalSearch<N> {
     pub fn new() -> Self {
-        Self {
-            _p: PhantomData,
-            _n: PhantomData,
-        }
+        Self { _n: PhantomData }
     }
 }
 
-impl<P, N> MetaHeuristic<P> for LocalSearch<P, N>
+impl<P, N> MetaHeuristic<P> for LocalSearch<N>
 where
     P: Problem,
     N: MoveNeighborhood<P>,
