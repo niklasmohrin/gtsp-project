@@ -5,6 +5,7 @@ pub mod gtsp;
 pub mod localsearch;
 pub mod tabusearch;
 pub mod termination;
+pub mod multistart;
 
 pub trait Problem {
     type Score: Ord;

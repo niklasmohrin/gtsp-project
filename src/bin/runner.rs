@@ -9,6 +9,7 @@ use gtsp::{
         GtspProblem,
     },
     localsearch::LocalSearch,
+    multistart::Multistart,
     tabusearch::TabuSearch,
     termination::Termination,
     MetaHeuristic,
@@ -31,23 +32,35 @@ fn main() -> anyhow::Result<()> {
     let mut writer = csv::Writer::from_writer(io::stdout().lock());
 
     macro_rules! run {
-        ($m: ty) => {
+        ($m: expr) => {
             writer.serialize(Run {
                 name: stringify!($m),
-                weight: <$m>::new(Termination::after_duration(Duration::from_millis(100)))
-                    .run(&problem, &mut rng)
-                    .weight(),
+                weight: $m.run(&problem, &mut rng).weight(),
             })
         };
     }
 
     for _ in 0..10 {
-        run!(LocalSearch::<TwoOptNeighborhood>)?;
-        run!(LocalSearch::<SwapNeighborhood>)?;
-        run!(TabuSearch::<TwoOptNeighborhood, 100>)?;
-        run!(TabuSearch::<SwapNeighborhood, 100>)?;
-        run!(TabuSearch::<TwoOptNeighborhood, 500>)?;
-        run!(TabuSearch::<SwapNeighborhood, 500>)?;
+        run!(Multistart::new(
+            Termination::after_duration(Duration::from_millis(100)),
+            || LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
+        ))?;
+        run!(Multistart::new(
+            Termination::after_duration(Duration::from_millis(100)),
+            || LocalSearch::<SwapNeighborhood>::new(Termination::never())
+        ))?;
+        run!(TabuSearch::<TwoOptNeighborhood, 100>::new(
+            Termination::after_duration(Duration::from_millis(100))
+        ))?;
+        run!(TabuSearch::<SwapNeighborhood, 100>::new(
+            Termination::after_duration(Duration::from_millis(100))
+        ))?;
+        run!(TabuSearch::<TwoOptNeighborhood, 500>::new(
+            Termination::after_duration(Duration::from_millis(100))
+        ))?;
+        run!(TabuSearch::<SwapNeighborhood, 500>::new(
+            Termination::after_duration(Duration::from_millis(100))
+        ))?;
     }
 
     Ok(())

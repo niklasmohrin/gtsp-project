@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 enum TerminationKind {
     Iterations(usize),
     Timeout(Instant),
+    Never,
 }
 
 #[derive(Debug, Clone)]
@@ -27,10 +28,18 @@ impl Termination {
         }
     }
 
+    pub fn never() -> Self {
+        Self {
+            kind: TerminationKind::Never,
+            iterations: 0,
+        }
+    }
+
     pub fn should_terminate(&self) -> bool {
         match self.kind {
             TerminationKind::Iterations(n) => self.iterations >= n,
             TerminationKind::Timeout(instant) => instant < Instant::now(),
+            TerminationKind::Never => false,
         }
     }
 
