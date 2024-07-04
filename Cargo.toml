@@ -6,6 +6,9 @@ msrv = "1.74"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+count-iterations = []
+
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }

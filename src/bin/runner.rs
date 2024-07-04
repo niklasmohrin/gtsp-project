@@ -34,11 +34,9 @@ fn main() -> anyhow::Result<()> {
         ($m: ty) => {
             writer.serialize(Run {
                 name: stringify!($m),
-                weight: <$m>::new(Termination::Timeout(
-                    Instant::now() + Duration::from_millis(100),
-                ))
-                .run(&problem, &mut rng)
-                .weight(),
+                weight: <$m>::new(Termination::after_duration(Duration::from_millis(100)))
+                    .run(&problem, &mut rng)
+                    .weight(),
             })
         };
     }
@@ -46,8 +44,10 @@ fn main() -> anyhow::Result<()> {
     for _ in 0..10 {
         run!(LocalSearch::<TwoOptNeighborhood>)?;
         run!(LocalSearch::<SwapNeighborhood>)?;
-        run!(TabuSearch::<TwoOptNeighborhood>)?;
-        run!(TabuSearch::<SwapNeighborhood>)?;
+        run!(TabuSearch::<TwoOptNeighborhood, 100>)?;
+        run!(TabuSearch::<SwapNeighborhood, 100>)?;
+        run!(TabuSearch::<TwoOptNeighborhood, 500>)?;
+        run!(TabuSearch::<SwapNeighborhood, 500>)?;
     }
 
     Ok(())

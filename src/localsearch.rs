@@ -23,7 +23,7 @@ where
     P: Problem,
     N: MoveNeighborhood<P>,
 {
-    fn run(self, instance: &P, rng: impl Rng) -> P::Solution {
+    fn run(mut self, instance: &P, rng: impl Rng) -> P::Solution {
         let mut best = instance.make_intial_solution(rng);
 
         while !self.termination.should_terminate() {
@@ -35,6 +35,8 @@ where
                 break;
             };
             best = new_best;
+
+            self.termination.iteration();
         }
 
         best
