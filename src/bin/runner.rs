@@ -1,4 +1,7 @@
-use std::io;
+use std::{
+    io,
+    time::{Duration, Instant},
+};
 
 use gtsp::{
     gtsp::{
@@ -28,21 +31,23 @@ fn main() -> anyhow::Result<()> {
     let mut writer = csv::Writer::from_writer(io::stdout().lock());
 
     macro_rules! run {
-        ($m: expr) => {
+        ($m: ty) => {
             writer.serialize(Run {
                 name: stringify!($m),
-                weight: $m.run(&problem, &mut rng).weight(),
+                weight: <$m>::new(Termination::Timeout(
+                    Instant::now() + Duration::from_millis(100),
+                ))
+                .run(&problem, &mut rng)
+                .weight(),
             })
         };
     }
 
-    let termination = Termination::Iterations(5);
-
     for _ in 0..10 {
-        run!(LocalSearch::<TwoOptNeighborhood>::new())?;
-        run!(LocalSearch::<SwapNeighborhood>::new())?;
-        run!(TabuSearch::<SwapNeighborhood>::new(termination))?;
-        run!(TabuSearch::<SwapNeighborhood>::new(termination))?;
+        run!(LocalSearch::<TwoOptNeighborhood>)?;
+        run!(LocalSearch::<SwapNeighborhood>)?;
+        run!(TabuSearch::<TwoOptNeighborhood>)?;
+        run!(TabuSearch::<SwapNeighborhood>)?;
     }
 
     Ok(())
