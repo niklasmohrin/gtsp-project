@@ -33,11 +33,16 @@ fn main() -> anyhow::Result<()> {
 
     for path in env::args().skip(1) {
         let problem = GtspProblem::<i64>::read_from_text(BufReader::new(File::open(&path)?))?;
+        let suffix = if problem.is_symmetric() {
+            ""
+        } else {
+            " (asymm.)"
+        };
 
         macro_rules! run {
             ($name: expr, $m: expr) => {
                 writer.serialize(Run {
-                    problem: &path,
+                    problem: &(path.clone() + suffix),
                     name: $name,
                     weight: $m.run(&problem).weight(),
                 })
@@ -59,58 +64,79 @@ fn main() -> anyhow::Result<()> {
             };
         }
 
+        let d = Duration::from_millis(100);
+
         for _ in 0..10 {
             run!(
                 "MS LS 2-Opt",
-                Multistart::new(
-                    Termination::after_duration(Duration::from_millis(100)),
-                    || of_random!(LocalSearch::<TwoOptNeighborhood>::new(Termination::never()))
-                )
+                Multistart::new(Termination::after_duration(d), || of_random!(
+                    LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
+                ))
             )?;
             run!(
-                "MS LS 2-Opt (with CO)",
-                Multistart::new(
-                    Termination::after_duration(Duration::from_millis(100)),
-                    || of_random!(with_co!(LocalSearch::<TwoOptNeighborhood>::new(
-                        Termination::never()
-                    )))
-                )
+                "MS LS 2-Opt with CO",
+                Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
+                    LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
+                )))
             )?;
             run!(
                 "MS LS Swap",
-                Multistart::new(
-                    Termination::after_duration(Duration::from_millis(100)),
-                    || of_random!(LocalSearch::<SwapNeighborhood>::new(Termination::never()))
-                )
+                Multistart::new(Termination::after_duration(d), || of_random!(
+                    LocalSearch::<SwapNeighborhood>::new(Termination::never())
+                ))
+            )?;
+            run!(
+                "MS LS Swap with CO",
+                Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
+                    LocalSearch::<SwapNeighborhood>::new(Termination::never())
+                )))
             )?;
             run!(
                 "Tabu 2-Opt (L=100)",
                 of_random!(TabuSearch::<TwoOptNeighborhood, 100>::new(
-                    Termination::after_duration(Duration::from_millis(100))
+                    Termination::after_duration(d)
                 ))
+            )?;
+            run!(
+                "Tabu 2-Opt (L=100) with CO",
+                of_random!(with_co!(TabuSearch::<TwoOptNeighborhood, 100>::new(
+                    Termination::after_duration(d)
+                )))
             )?;
             run!(
                 "Tabu Swap (L=100)",
                 of_random!(TabuSearch::<SwapNeighborhood, 100>::new(
-                    Termination::after_duration(Duration::from_millis(100))
+                    Termination::after_duration(d)
                 ))
+            )?;
+            run!(
+                "Tabu Swap (L=100) with CO",
+                of_random!(with_co!(TabuSearch::<SwapNeighborhood, 100>::new(
+                    Termination::after_duration(d)
+                )))
             )?;
             run!(
                 "Tabu 2-Opt (L=500)",
                 of_random!(TabuSearch::<TwoOptNeighborhood, 500>::new(
-                    Termination::after_duration(Duration::from_millis(100))
+                    Termination::after_duration(d)
                 ))
+            )?;
+            run!(
+                "Tabu 2-Opt (L=500) with CO",
+                of_random!(with_co!(TabuSearch::<TwoOptNeighborhood, 500>::new(
+                    Termination::after_duration(d)
+                )))
             )?;
             run!(
                 "Tabu Swap (L=500)",
                 of_random!(TabuSearch::<SwapNeighborhood, 500>::new(
-                    Termination::after_duration(Duration::from_millis(100))
+                    Termination::after_duration(d)
                 ))
             )?;
             run!(
                 "Tabu Swap (L=500) with CO",
                 of_random!(with_co!(TabuSearch::<SwapNeighborhood, 500>::new(
-                    Termination::after_duration(Duration::from_millis(100))
+                    Termination::after_duration(d)
                 )))
             )?;
         }

@@ -10,8 +10,10 @@ results = read.csv("results.csv", header=TRUE, sep=",")
 results = results %>%
   mutate(problem = sub("^instances/", "", problem)) %>%
   group_by(problem, name) %>%
-  group_modify(function(data, keys) { mutate(data, opt = as.integer(readLines(paste("solutions", keys$problem, sep="/"))[2])) }) %>%
-  mutate(problem = sub(".txt$", "", problem)) %>%
+  group_modify(function(data, keys) {
+    mutate(data, opt = as.integer(readLines(paste("solutions", sub(" \\(asymm\\.\\)$", "", keys$problem), sep="/"))[2]))
+  }) %>%
+  mutate(problem = sub(".txt", "", problem)) %>%
   summarise(
     mean_weight = mean(weight / opt),
     std_weight = sd(weight / opt),
@@ -27,4 +29,4 @@ ggplot(data = results, aes(x = name, y = mean_weight, fill = as.factor(problem))
   theme(text = element_text(size = 10)) +
   scale_x_discrete(labels = label_wrap(10)) +
   coord_cartesian(ylim=c(1, NA))
-ggsave("out.pdf", width = 20, height = 10, units = "cm")
+ggsave("out.pdf", width = 30, height = 10, units = "cm")
