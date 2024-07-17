@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "gtsp-solutions": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-S4gEV5/pMp6t/I2IdxNyj0p/Ml8R6rW6Q2iJEysfGBg=",
+        "type": "file",
+        "url": "http://www.cs.nott.ac.uk/~dxk/gtsplib/SolutionsText.zip"
+      },
+      "original": {
+        "type": "file",
+        "url": "http://www.cs.nott.ac.uk/~dxk/gtsplib/SolutionsText.zip"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1720954236,
@@ -18,6 +30,7 @@
     },
     "root": {
       "inputs": {
+        "gtsp-solutions": "gtsp-solutions",
         "nixpkgs": "nixpkgs"
       }
     }
