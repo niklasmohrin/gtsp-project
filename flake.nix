@@ -12,9 +12,9 @@
       packages.${system}.default = pkgs.stdenvNoCC.mkDerivation {
         name = "GTSP plots";
         src = ./.;
-        buildInputs = with pkgs; [ R rPackages.ggplot2 ];
+        buildInputs = with pkgs; [ R rPackages.ggplot2 rPackages.dplyr rPackages.scales ];
         buildPhase = "R --vanilla -f plots.R";
-        installPhase = "cp Rplots.pdf $out";
+        installPhase = "cp out.pdf $out";
       };
     };
 }

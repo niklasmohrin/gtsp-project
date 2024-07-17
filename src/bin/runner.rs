@@ -5,8 +5,6 @@ use std::{
     time::Duration,
 };
 
-use itertools::Itertools as _;
-
 use gtsp::{
     gtsp::{
         neighborhoods::{SwapNeighborhood, TwoOptNeighborhood},
@@ -36,36 +34,54 @@ fn main() -> anyhow::Result<()> {
         let problem = GtspProblem::<i64>::read_from_text(BufReader::new(File::open(&path)?))?;
 
         macro_rules! run {
-            ($m: expr) => {
+            ($name: expr, $m: expr) => {
                 writer.serialize(Run {
                     problem: &path,
-                    name: &stringify!($m).split_whitespace().join(" "),
+                    name: $name,
                     weight: $m.run(&problem, &mut rng).weight(),
                 })
             };
         }
 
         for _ in 0..10 {
-            run!(Multistart::new(
-                Termination::after_duration(Duration::from_millis(100)),
-                || LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
-            ))?;
-            run!(Multistart::new(
-                Termination::after_duration(Duration::from_millis(100)),
-                || LocalSearch::<SwapNeighborhood>::new(Termination::never())
-            ))?;
-            run!(TabuSearch::<TwoOptNeighborhood, 100>::new(
-                Termination::after_duration(Duration::from_millis(100))
-            ))?;
-            run!(TabuSearch::<SwapNeighborhood, 100>::new(
-                Termination::after_duration(Duration::from_millis(100))
-            ))?;
-            run!(TabuSearch::<TwoOptNeighborhood, 500>::new(
-                Termination::after_duration(Duration::from_millis(100))
-            ))?;
-            run!(TabuSearch::<SwapNeighborhood, 500>::new(
-                Termination::after_duration(Duration::from_millis(100))
-            ))?;
+            run!(
+                "MS LS 2-Opt",
+                Multistart::new(
+                    Termination::after_duration(Duration::from_millis(100)),
+                    || LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
+                )
+            )?;
+            run!(
+                "MS LS Swap",
+                Multistart::new(
+                    Termination::after_duration(Duration::from_millis(100)),
+                    || LocalSearch::<SwapNeighborhood>::new(Termination::never())
+                )
+            )?;
+            run!(
+                "Tabu 2-Opt (L=100)",
+                TabuSearch::<TwoOptNeighborhood, 100>::new(Termination::after_duration(
+                    Duration::from_millis(100)
+                ))
+            )?;
+            run!(
+                "Tabu Swap (L=100)",
+                TabuSearch::<SwapNeighborhood, 100>::new(Termination::after_duration(
+                    Duration::from_millis(100)
+                ))
+            )?;
+            run!(
+                "Tabu 2-Opt (L=500)",
+                TabuSearch::<TwoOptNeighborhood, 500>::new(Termination::after_duration(
+                    Duration::from_millis(100)
+                ))
+            )?;
+            run!(
+                "Tabu Swap (L=500)",
+                TabuSearch::<SwapNeighborhood, 500>::new(Termination::after_duration(
+                    Duration::from_millis(100)
+                ))
+            )?;
         }
     }
 
