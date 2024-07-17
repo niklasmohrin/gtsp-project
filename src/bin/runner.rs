@@ -6,6 +6,7 @@ use std::{
 };
 
 use gtsp::{
+    chain::Chain,
     gtsp::{
         neighborhoods::{ClusterOptimization, SwapNeighborhood, TwoOptNeighborhood},
         GtspProblem, RandomSolution,
@@ -52,12 +53,27 @@ fn main() -> anyhow::Result<()> {
             };
         }
 
+        macro_rules! with_co {
+            ($im: expr) => {
+                Chain::new($im, ClusterOptimization)
+            };
+        }
+
         for _ in 0..10 {
             run!(
                 "MS LS 2-Opt",
                 Multistart::new(
                     Termination::after_duration(Duration::from_millis(100)),
                     || of_random!(LocalSearch::<TwoOptNeighborhood>::new(Termination::never()))
+                )
+            )?;
+            run!(
+                "MS LS 2-Opt (with CO)",
+                Multistart::new(
+                    Termination::after_duration(Duration::from_millis(100)),
+                    || of_random!(with_co!(LocalSearch::<TwoOptNeighborhood>::new(
+                        Termination::never()
+                    )))
                 )
             )?;
             run!(
@@ -91,7 +107,12 @@ fn main() -> anyhow::Result<()> {
                     Termination::after_duration(Duration::from_millis(100))
                 ))
             )?;
-            run!("CO", of_random!(ClusterOptimization))?;
+            run!(
+                "Tabu Swap (L=500) with CO",
+                of_random!(with_co!(TabuSearch::<SwapNeighborhood, 500>::new(
+                    Termination::after_duration(Duration::from_millis(100))
+                )))
+            )?;
         }
     }
 

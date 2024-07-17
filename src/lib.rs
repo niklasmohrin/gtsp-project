@@ -1,6 +1,6 @@
 use itertools::Itertools;
-use rand::Rng;
 
+pub mod chain;
 pub mod gtsp;
 pub mod localsearch;
 pub mod multistart;
