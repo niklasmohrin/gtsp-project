@@ -7,7 +7,7 @@ use std::{
 
 use gtsp::{
     gtsp::{
-        neighborhoods::{SwapNeighborhood, TwoOptNeighborhood},
+        neighborhoods::{ClusterOptimization, SwapNeighborhood, TwoOptNeighborhood},
         GtspProblem,
     },
     localsearch::LocalSearch,
@@ -80,6 +80,12 @@ fn main() -> anyhow::Result<()> {
                 "Tabu Swap (L=500)",
                 TabuSearch::<SwapNeighborhood, 500>::new(Termination::after_duration(
                     Duration::from_millis(100)
+                ))
+            )?;
+            run!(
+                "CO",
+                TabuSearch::<ClusterOptimization, 100>::new(Termination::after_duration(
+                    Duration::from_millis(500)
                 ))
             )?;
         }
