@@ -1,11 +1,6 @@
 use std::{collections::VecDeque, marker::PhantomData};
 
-use rand::prelude::Rng;
-
-use crate::{
-    termination::{self, Termination},
-    MetaHeuristic, Move, Neighborhood, Problem,
-};
+use crate::{termination::Termination, ImprovementHeuristic, Neighborhood, Problem};
 
 pub struct TabuSearch<N, const L: usize> {
     termination: Termination,
@@ -21,14 +16,14 @@ impl<N, const L: usize> TabuSearch<N, L> {
     }
 }
 
-impl<P, N, const L: usize> MetaHeuristic<P> for TabuSearch<N, L>
+impl<P, N, const L: usize> ImprovementHeuristic<P> for TabuSearch<N, L>
 where
     P: Problem,
     P::Solution: Clone + PartialEq,
     N: Neighborhood<P>,
 {
-    fn run(mut self, instance: &P, rng: impl Rng) -> <P as Problem>::Solution {
-        let mut best = instance.make_intial_solution(rng);
+    fn improve(&mut self, instance: &P, current: P::Solution) -> P::Solution {
+        let mut best = current;
         let mut tabu_list = VecDeque::with_capacity(L + 1);
         tabu_list.push_back(best.clone());
         while !self.termination.should_terminate() {

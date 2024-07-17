@@ -10,7 +10,7 @@ use anyhow::{bail, Context};
 use itertools::Itertools;
 use rand::{seq::SliceRandom, Rng};
 
-use crate::Problem;
+use crate::{InitialSolution, Problem};
 
 pub mod neighborhoods;
 
@@ -198,13 +198,26 @@ impl<R: Ring> Problem for GtspProblem<R> {
     fn score(solution: &Self::Solution) -> Self::Score {
         -solution.weight()
     }
+}
 
-    fn make_intial_solution(&self, mut rng: impl Rng) -> Self::Solution {
+pub struct RandomSolution<G: Rng> {
+    rng: G,
+}
+
+impl<G: Rng> RandomSolution<G> {
+    pub fn new(rng: G) -> Self {
+        Self { rng }
+    }
+}
+
+impl<G: Rng, R: Ring> InitialSolution<GtspProblem<R>> for RandomSolution<G> {
+    fn make_intial_solution(&mut self, instance: &GtspProblem<R>) -> Solution<R> {
         Solution::new(
-            self,
-            self.clusters
+            instance,
+            instance
+                .clusters
                 .iter()
-                .map(|c| *c.choose(&mut rng).expect("cluster was empty"))
+                .map(|c| *c.choose(&mut self.rng).expect("cluster was empty"))
                 .collect(),
         )
     }

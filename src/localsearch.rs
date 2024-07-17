@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rand::Rng;
-
-use crate::{termination::Termination, MetaHeuristic, Move, MoveNeighborhood, Problem};
+use crate::{termination::Termination, ImprovementHeuristic, Move, MoveNeighborhood, Problem};
 
 pub struct LocalSearch<N> {
     termination: Termination,
@@ -18,13 +16,13 @@ impl<N> LocalSearch<N> {
     }
 }
 
-impl<P, N> MetaHeuristic<P> for LocalSearch<N>
+impl<P, N> ImprovementHeuristic<P> for LocalSearch<N>
 where
     P: Problem,
     N: MoveNeighborhood<P>,
 {
-    fn run(mut self, instance: &P, rng: impl Rng) -> P::Solution {
-        let mut best = instance.make_intial_solution(rng);
+    fn improve(&mut self, instance: &P, current: P::Solution) -> P::Solution {
+        let mut best = current;
 
         while !self.termination.should_terminate() {
             let Some(new_best) = N::moves_iter(instance, &best)

@@ -1,7 +1,5 @@
 use std::iter;
 
-use rand::Rng;
-
 use crate::{termination::Termination, MetaHeuristic, Problem};
 
 pub struct Multistart<F> {
@@ -24,8 +22,8 @@ where
     M: MetaHeuristic<P>,
     F: FnMut() -> M,
 {
-    fn run(mut self, instance: &P, mut rng: impl Rng) -> P::Solution {
-        let mut solutions = iter::repeat_with(|| (self.factory)().run(instance, &mut rng));
+    fn run(mut self, instance: &P) -> P::Solution {
+        let mut solutions = iter::repeat_with(|| (self.factory)().run(instance));
 
         let mut best = solutions.next().unwrap();
 

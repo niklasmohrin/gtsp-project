@@ -3,16 +3,15 @@ use rand::Rng;
 
 pub mod gtsp;
 pub mod localsearch;
+pub mod multistart;
 pub mod tabusearch;
 pub mod termination;
-pub mod multistart;
 
 pub trait Problem {
     type Score: Ord;
     type Solution;
 
     fn score(solution: &Self::Solution) -> Self::Score;
-    fn make_intial_solution(&self, rng: impl Rng) -> Self::Solution;
 }
 
 pub trait Neighborhood<P: Problem> {
@@ -53,6 +52,40 @@ impl<P: Problem, N: MoveNeighborhood<P>> Neighborhood<P> for N {
     }
 }
 
+pub trait InitialSolution<P: Problem> {
+    fn make_intial_solution(&mut self, instance: &P) -> P::Solution;
+}
+
+pub trait ImprovementHeuristic<P: Problem> {
+    fn improve(&mut self, instance: &P, current: P::Solution) -> P::Solution;
+}
+
 pub trait MetaHeuristic<P: Problem> {
-    fn run(self, instance: &P, rng: impl Rng) -> P::Solution;
+    fn run(self, instance: &P) -> P::Solution;
+}
+
+pub struct ImproveInitial<In, Im> {
+    initial: In,
+    improvement: Im,
+}
+
+impl<In, Im> ImproveInitial<In, Im> {
+    pub fn new(initial: In, improvement: Im) -> Self {
+        Self {
+            initial,
+            improvement,
+        }
+    }
+}
+
+impl<P, In, Im> MetaHeuristic<P> for ImproveInitial<In, Im>
+where
+    P: Problem,
+    In: InitialSolution<P>,
+    Im: ImprovementHeuristic<P>,
+{
+    fn run(mut self, instance: &P) -> <P as Problem>::Solution {
+        self.improvement
+            .improve(instance, self.initial.make_intial_solution(instance))
+    }
 }

@@ -8,13 +8,13 @@ use std::{
 use gtsp::{
     gtsp::{
         neighborhoods::{ClusterOptimization, SwapNeighborhood, TwoOptNeighborhood},
-        GtspProblem,
+        GtspProblem, RandomSolution,
     },
     localsearch::LocalSearch,
     multistart::Multistart,
     tabusearch::TabuSearch,
     termination::Termination,
-    MetaHeuristic,
+    ImproveInitial, MetaHeuristic,
 };
 use rand::{rngs::SmallRng, SeedableRng as _};
 use serde_derive::Serialize;
@@ -38,8 +38,17 @@ fn main() -> anyhow::Result<()> {
                 writer.serialize(Run {
                     problem: &path,
                     name: $name,
-                    weight: $m.run(&problem, &mut rng).weight(),
+                    weight: $m.run(&problem).weight(),
                 })
+            };
+        }
+
+        macro_rules! of_random {
+            ($im: expr) => {
+                ImproveInitial::new(
+                    RandomSolution::new(SmallRng::from_rng(&mut rng).unwrap()),
+                    $im,
+                )
             };
         }
 
@@ -48,46 +57,41 @@ fn main() -> anyhow::Result<()> {
                 "MS LS 2-Opt",
                 Multistart::new(
                     Termination::after_duration(Duration::from_millis(100)),
-                    || LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
+                    || of_random!(LocalSearch::<TwoOptNeighborhood>::new(Termination::never()))
                 )
             )?;
             run!(
                 "MS LS Swap",
                 Multistart::new(
                     Termination::after_duration(Duration::from_millis(100)),
-                    || LocalSearch::<SwapNeighborhood>::new(Termination::never())
+                    || of_random!(LocalSearch::<SwapNeighborhood>::new(Termination::never()))
                 )
             )?;
             run!(
                 "Tabu 2-Opt (L=100)",
-                TabuSearch::<TwoOptNeighborhood, 100>::new(Termination::after_duration(
-                    Duration::from_millis(100)
+                of_random!(TabuSearch::<TwoOptNeighborhood, 100>::new(
+                    Termination::after_duration(Duration::from_millis(100))
                 ))
             )?;
             run!(
                 "Tabu Swap (L=100)",
-                TabuSearch::<SwapNeighborhood, 100>::new(Termination::after_duration(
-                    Duration::from_millis(100)
+                of_random!(TabuSearch::<SwapNeighborhood, 100>::new(
+                    Termination::after_duration(Duration::from_millis(100))
                 ))
             )?;
             run!(
                 "Tabu 2-Opt (L=500)",
-                TabuSearch::<TwoOptNeighborhood, 500>::new(Termination::after_duration(
-                    Duration::from_millis(100)
+                of_random!(TabuSearch::<TwoOptNeighborhood, 500>::new(
+                    Termination::after_duration(Duration::from_millis(100))
                 ))
             )?;
             run!(
                 "Tabu Swap (L=500)",
-                TabuSearch::<SwapNeighborhood, 500>::new(Termination::after_duration(
-                    Duration::from_millis(100)
+                of_random!(TabuSearch::<SwapNeighborhood, 500>::new(
+                    Termination::after_duration(Duration::from_millis(100))
                 ))
             )?;
-            run!(
-                "CO",
-                TabuSearch::<ClusterOptimization, 100>::new(Termination::after_duration(
-                    Duration::from_millis(500)
-                ))
-            )?;
+            run!("CO", of_random!(ClusterOptimization))?;
         }
     }
 
