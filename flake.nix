@@ -9,7 +9,7 @@
     };
   };
 
-  outputs = { nixpkgs, gtsp-solutions, ... }:
+  outputs = { nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
@@ -24,18 +24,15 @@
           cargoBuildFlags = [ "--bin" "runner" ];
         };
 
-        plots =
-          let
-            fs = pkgs.lib.fileset;
-          in
-          pkgs.stdenvNoCC.mkDerivation {
-            name = "GTSP plots";
-            src = fs.toSource { root = ./.; fileset = fs.unions [ ./plots.R ./results.csv ]; };
-            buildInputs = with pkgs; [ R rPackages.ggplot2 rPackages.dplyr rPackages.scales unzip ];
-            postUnpack = "unzip -d source/solutions ${gtsp-solutions}";
-            buildPhase = "R --vanilla -f plots.R";
-            installPhase = "cp out.pdf $out";
-          };
+        gtsp-solutions = pkgs.runCommand "gtsp-solutions" { } "${pkgs.unzip}/bin/unzip -d $out ${inputs.gtsp-solutions}";
+
+        plots = pkgs.stdenvNoCC.mkDerivation {
+          name = "GTSP plots";
+          dontUnpack = true;
+          buildInputs = with pkgs; [ R rPackages.ggplot2 rPackages.dplyr rPackages.scales ];
+          buildPhase = "Rscript --vanilla ${./plots.R} ${gtsp-solutions} ${./results.csv}";
+          installPhase = "cp out.pdf $out";
+        };
         default = plots;
       };
     };

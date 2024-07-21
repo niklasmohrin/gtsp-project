@@ -6,12 +6,16 @@ library(scales)
 # https://www.r-bloggers.com/2021/03/making-bar-plots-using-ggplot-in-r/
 # https://www.andrewheiss.com/blog/2022/06/23/long-labels-ggplot/
 
-results = read.csv("results.csv", header=TRUE, sep=",")
+args = commandArgs(TRUE)
+solutions_path = args[1]
+results_path = args[2]
+
+results = read.csv(results_path, header=TRUE, sep=",")
 results = results %>%
   mutate(problem = sub("^instances/", "", problem)) %>%
   group_by(problem, name) %>%
   group_modify(function(data, keys) {
-    mutate(data, opt = as.integer(readLines(paste("solutions", sub(" \\(asymm\\.\\)$", "", keys$problem), sep="/"))[2]))
+    mutate(data, opt = as.integer(readLines(paste(solutions_path, sub(" \\(asymm\\.\\)$", "", keys$problem), sep="/"))[2]))
   }) %>%
   mutate(problem = sub(".txt", "", problem)) %>%
   summarise(
