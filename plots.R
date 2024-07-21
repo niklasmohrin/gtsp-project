@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(ggplot2)
 library(dplyr)
 library(scales)
@@ -9,6 +11,7 @@ library(scales)
 args = commandArgs(TRUE)
 solutions_path = args[1]
 results_path = args[2]
+out_path = args[3]
 
 results = read.csv(results_path, header=TRUE, sep=",")
 results = results %>%
@@ -31,4 +34,4 @@ ggplot(data = results, aes(x = name, y = mean_weight_err, fill = as.factor(probl
   theme_minimal() +
   theme(text = element_text(size = 10)) +
   scale_x_discrete(labels = label_wrap(10))
-ggsave("out.pdf", width = 30, height = 10, units = "cm")
+ggsave(out_path, width = 30, height = 10, units = "cm")

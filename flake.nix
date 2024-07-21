@@ -26,14 +26,15 @@
 
         gtsp-solutions = pkgs.runCommand "gtsp-solutions" { } "${pkgs.unzip}/bin/unzip -d $out ${inputs.gtsp-solutions}";
 
-        plots = pkgs.stdenvNoCC.mkDerivation {
-          name = "GTSP plots";
-          dontUnpack = true;
-          buildInputs = with pkgs; [ R rPackages.ggplot2 rPackages.dplyr rPackages.scales ];
-          buildPhase = "Rscript --vanilla ${./plots.R} ${gtsp-solutions} ${./results.csv}";
-          installPhase = "cp out.pdf $out";
+        r-env = pkgs.rWrapper.override { packages = with pkgs.rPackages; [ ggplot2 dplyr scales ]; };
+        plots-script = pkgs.writeShellApplication {
+          name = "gtsp-plots";
+          runtimeInputs = [ r-env ];
+          text = ''
+            ${./plots.R} ${gtsp-solutions} "$@"
+          '';
         };
-        default = plots;
+        default = plots-script;
       };
     };
 }
