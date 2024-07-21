@@ -8,10 +8,8 @@ use std::{
 use gtsp::{
     chain::Chain,
     gtsp::{
-        neighborhoods::{
-            ClusterOptimization, InsertsNeighborhood, SwapNeighborhood, TwoOptNeighborhood,
-        },
-        GtspProblem, RandomSolution,
+        neighborhoods::{InsertsNeighborhood, SwapNeighborhood, TwoOptNeighborhood},
+        ClusterOptimization, GtspProblem, RandomSolution,
     },
     localsearch::LocalSearch,
     multistart::Multistart,

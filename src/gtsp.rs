@@ -14,6 +14,9 @@ use crate::{InitialSolution, Problem};
 
 pub mod neighborhoods;
 
+pub mod cluster_optimization;
+pub use cluster_optimization::ClusterOptimization;
+
 pub trait Ring:
     Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Neg<Output = Self> + Sum
 {
