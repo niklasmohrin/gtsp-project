@@ -1,6 +1,7 @@
 use itertools::Itertools;
 
 pub mod chain;
+pub mod cycle_neighborhoods;
 pub mod gtsp;
 pub mod localsearch;
 pub mod multistart;

@@ -7,6 +7,7 @@ use std::{
 
 use gtsp::{
     chain::Chain,
+    cycle_neighborhoods::{Cycle, ExploreOnce},
     gtsp::{
         neighborhoods::{InsertsNeighborhood, SwapNeighborhood, TwoOptNeighborhood},
         ClusterOptimization, GtspProblem, RandomSolution,
@@ -15,7 +16,7 @@ use gtsp::{
     multistart::Multistart,
     tabusearch::TabuSearch,
     termination::Termination,
-    ImproveInitial, MetaHeuristic,
+    ImproveInitial, ImprovementHeuristic, MetaHeuristic,
 };
 use rand::{rngs::SmallRng, SeedableRng as _};
 use serde_derive::Serialize;
@@ -131,6 +132,34 @@ fn main() -> anyhow::Result<()> {
             run_all!("2-Opt", TwoOptNeighborhood);
             run_all!("Swap", SwapNeighborhood);
             run_tabu!("Inserts", InsertsNeighborhood);
+            run!(
+                "MS Cycle",
+                Multistart::new(Termination::after_duration(d), || {
+                    of_random!(Cycle::new(
+                        [
+                            Box::new(ExploreOnce(TwoOptNeighborhood))
+                                as Box<dyn ImprovementHeuristic<GtspProblem<_>>>,
+                            Box::new(ExploreOnce(SwapNeighborhood)),
+                            Box::new(ExploreOnce(InsertsNeighborhood)),
+                        ],
+                        Termination::never()
+                    ))
+                })
+            )?;
+            run!(
+                "MS Cycle with CO",
+                Multistart::new(Termination::after_duration(d), || {
+                    of_random!(with_co!(Cycle::new(
+                        [
+                            Box::new(ExploreOnce(TwoOptNeighborhood))
+                                as Box<dyn ImprovementHeuristic<GtspProblem<_>>>,
+                            Box::new(ExploreOnce(SwapNeighborhood)),
+                            Box::new(ExploreOnce(InsertsNeighborhood)),
+                        ],
+                        Termination::never()
+                    )))
+                })
+            )?;
         }
     }
 
