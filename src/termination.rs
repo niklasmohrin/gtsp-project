@@ -7,7 +7,7 @@ enum TerminationKind {
     Never,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Termination {
     kind: TerminationKind,
     iterations: usize,

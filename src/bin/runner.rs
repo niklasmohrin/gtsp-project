@@ -42,7 +42,7 @@ fn main() -> anyhow::Result<()> {
         let problem_name = path + suffix;
         eprintln!("Problem: {problem_name}");
 
-        let d = Duration::from_millis(100);
+        let d = Duration::from_secs(3);
 
         macro_rules! run {
             ($name: expr, $m: expr) => {
@@ -86,17 +86,15 @@ fn main() -> anyhow::Result<()> {
 
         macro_rules! run_ms {
             ($name: expr, $neigh: ty) => {
+                let t = Termination::after_duration(d);
                 run!(
                     concat!("MS LS ", $name),
-                    Multistart::new(Termination::after_duration(d), || of_random!(
-                        LocalSearch::<$neigh>::new(Termination::never())
-                    ))
+                    Multistart::new(t, || of_random!(LocalSearch::<$neigh>::new(t)))
                 )?;
+                let t = Termination::after_duration(d);
                 run!(
                     concat!("MS LS ", $name, " with CO"),
-                    Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
-                        LocalSearch::<$neigh>::new(Termination::never())
-                    )))
+                    Multistart::new(t, || of_random!(with_co!(LocalSearch::<$neigh>::new(t))))
                 )?;
             };
         }
@@ -139,9 +137,10 @@ fn main() -> anyhow::Result<()> {
                 AsMoveNeighborhood<InsertsNeighborhood>,
                 InsertsNeighborhood
             );
+            let t = Termination::after_duration(d);
             run!(
                 "MS Cycle",
-                Multistart::new(Termination::after_duration(d), || {
+                Multistart::new(t, || {
                     of_random!(Cycle::new(
                         [
                             Box::new(ExploreOnce(TwoOptNeighborhood))
@@ -149,13 +148,14 @@ fn main() -> anyhow::Result<()> {
                             Box::new(ExploreOnce(SwapNeighborhood)),
                             Box::new(ExploreOnce(InsertsNeighborhood)),
                         ],
-                        Termination::never()
+                        t
                     ))
                 })
             )?;
+            let t = Termination::after_duration(d);
             run!(
                 "MS Cycle with CO",
-                Multistart::new(Termination::after_duration(d), || {
+                Multistart::new(t, || {
                     of_random!(with_co!(Cycle::new(
                         [
                             Box::new(ExploreOnce(TwoOptNeighborhood))
@@ -163,7 +163,7 @@ fn main() -> anyhow::Result<()> {
                             Box::new(ExploreOnce(SwapNeighborhood)),
                             Box::new(ExploreOnce(InsertsNeighborhood)),
                         ],
-                        Termination::never()
+                        t
                     )))
                 })
             )?;
