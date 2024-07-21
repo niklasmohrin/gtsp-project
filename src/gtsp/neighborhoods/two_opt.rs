@@ -30,7 +30,7 @@ impl<'p, R: Ring> Move<GtspProblem<R>> for TwoOptMove<'p, R> {
         self.score_increase() > 0.into()
     }
 
-    fn into_solution(&self) -> <GtspProblem<R> as Problem>::Solution {
+    fn into_solution(self) -> <GtspProblem<R> as Problem>::Solution {
         let j = self.i + 1;
         let k = self.h + 1;
 

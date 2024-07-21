@@ -46,7 +46,7 @@ pub trait Neighborhood<P: Problem> {
 pub trait Move<P: Problem> {
     fn score_increase(&self) -> P::Score;
     fn is_improving(&self) -> bool;
-    fn into_solution(&self) -> P::Solution;
+    fn into_solution(self) -> P::Solution;
 }
 
 pub trait MoveNeighborhood<P: Problem> {
@@ -85,7 +85,6 @@ impl<P> Move<P> for TrivialMove<P>
 where
     P: Problem,
     P::Score: Ring,
-    P::Solution: Clone,
 {
     fn score_increase(&self) -> P::Score {
         P::score(&self.solution) - self.old_score
@@ -95,8 +94,8 @@ where
         self.score_increase() > 0.into()
     }
 
-    fn into_solution(&self) -> P::Solution {
-        self.solution.clone()
+    fn into_solution(self) -> P::Solution {
+        self.solution
     }
 }
 
@@ -104,7 +103,6 @@ impl<P, N> MoveNeighborhood<P> for AsMoveNeighborhood<N>
 where
     P: Problem,
     P::Score: Ring,
-    P::Solution: Clone,
     N: Neighborhood<P>,
 {
     type Move<'c> = TrivialMove<P>

@@ -30,7 +30,7 @@ impl<'p, R: Ring> Move<GtspProblem<R>> for SwapMove<'p, R> {
         self.score_increase() > 0.into()
     }
 
-    fn into_solution(&self) -> <GtspProblem<R> as Problem>::Solution {
+    fn into_solution(self) -> <GtspProblem<R> as Problem>::Solution {
         self.new.clone()
     }
 }
