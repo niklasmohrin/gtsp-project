@@ -51,11 +51,16 @@ fn main() -> anyhow::Result<()> {
                     weight: {
                         let start = Instant::now();
                         let res = $m.run(&problem).weight();
+                        let e = start.elapsed();
+                        let over = e.saturating_sub(d);
                         eprintln!(
-                            "  {} took {:?} over the planned duration of {:?}",
+                            "  {} took {e:?} ({over:?} over the planned duration of {d:?}){}",
                             $name,
-                            start.elapsed() - d,
-                            d
+                            (if over > d / 10 {
+                                " ** THAT IS LONG **"
+                            } else {
+                                ""
+                            })
                         );
                         res
                     },
