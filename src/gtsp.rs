@@ -1,38 +1,15 @@
-use std::{
-    fmt::Debug,
-    io::BufRead,
-    iter::Sum,
-    ops::{Add, Neg, Sub},
-    str::FromStr,
-};
+use std::{fmt::Debug, io::BufRead, str::FromStr};
 
 use anyhow::{bail, Context};
 use itertools::Itertools;
 use rand::{seq::SliceRandom, Rng};
 
-use crate::{InitialSolution, Problem};
+use crate::{InitialSolution, Problem, Ring};
 
 pub mod neighborhoods;
 
 pub mod cluster_optimization;
 pub use cluster_optimization::ClusterOptimization;
-
-pub trait Ring:
-    Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Neg<Output = Self> + Sum
-{
-}
-impl<
-        T: Debug
-            + Copy
-            + Ord
-            + From<u8>
-            + Add<Output = Self>
-            + Sub<Output = Self>
-            + Neg<Output = Self>
-            + Sum,
-    > Ring for T
-{
-}
 
 pub struct GtspProblem<R> {
     number_of_vertices: usize,

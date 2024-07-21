@@ -1,6 +1,6 @@
 use crate::{
-    gtsp::{GtspProblem, Ring, Solution},
-    Move, MoveNeighborhood, Problem,
+    gtsp::{GtspProblem, Solution},
+    Move, MoveNeighborhood, Problem, Ring,
 };
 
 pub struct SwapNeighborhood;

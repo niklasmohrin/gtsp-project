@@ -1,4 +1,9 @@
 use itertools::Itertools;
+use std::{
+    fmt::Debug,
+    iter::Sum,
+    ops::{Add, Neg, Sub},
+};
 
 pub mod chain;
 pub mod cycle_neighborhoods;
@@ -7,6 +12,23 @@ pub mod localsearch;
 pub mod multistart;
 pub mod tabusearch;
 pub mod termination;
+
+pub trait Ring:
+    Debug + Copy + Ord + From<u8> + Add<Output = Self> + Sub<Output = Self> + Neg<Output = Self> + Sum
+{
+}
+impl<
+        T: Debug
+            + Copy
+            + Ord
+            + From<u8>
+            + Add<Output = Self>
+            + Sub<Output = Self>
+            + Neg<Output = Self>
+            + Sum,
+    > Ring for T
+{
+}
 
 pub trait Problem {
     type Score: Ord;

@@ -1,6 +1,6 @@
 use crate::{
-    gtsp::{GtspProblem, Ring, Solution},
-    Neighborhood,
+    gtsp::{GtspProblem, Solution},
+    Neighborhood, Ring,
 };
 
 pub struct InsertsNeighborhood;

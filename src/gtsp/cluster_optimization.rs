@@ -1,8 +1,8 @@
 use itertools::Itertools as _;
 
 use crate::{
-    gtsp::{GtspProblem, Ring, Solution},
-    ImprovementHeuristic,
+    gtsp::{GtspProblem, Solution},
+    ImprovementHeuristic, Ring,
 };
 
 pub struct ClusterOptimization;
