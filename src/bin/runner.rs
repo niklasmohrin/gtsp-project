@@ -2,7 +2,7 @@ use std::{
     env,
     fs::File,
     io::{self, BufReader},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use gtsp::{
@@ -38,13 +38,22 @@ fn main() -> anyhow::Result<()> {
         } else {
             " (asymm.)"
         };
+        let problem_name = path + suffix;
+        eprintln!("Problem: {problem_name}");
+
+        let d = Duration::from_secs(1);
 
         macro_rules! run {
             ($name: expr, $m: expr) => {
                 writer.serialize(Run {
-                    problem: &(path.clone() + suffix),
+                    problem: &problem_name,
                     name: $name,
-                    weight: $m.run(&problem).weight(),
+                    weight: {
+                        let start = Instant::now();
+                        let res = $m.run(&problem).weight();
+                        eprintln!("  {} took {:?} over the planned duration of {:?}", $name, start.elapsed() - d, d);
+                        res
+                    },
                 })
             };
         }
@@ -63,8 +72,6 @@ fn main() -> anyhow::Result<()> {
                 Chain::new($im, ClusterOptimization)
             };
         }
-
-        let d = Duration::from_millis(100);
 
         for _ in 0..10 {
             run!(
