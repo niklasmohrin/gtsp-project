@@ -75,6 +75,61 @@ impl<P: Problem, N: MoveNeighborhood<P>> Neighborhood<P> for N {
     }
 }
 
+pub struct AsMoveNeighborhood<N>(N);
+
+pub struct TrivialMove<P: Problem> {
+    old_score: P::Score,
+    solution: P::Solution,
+}
+impl<P> Move<P> for TrivialMove<P>
+where
+    P: Problem,
+    P::Score: Ring,
+    P::Solution: Clone,
+{
+    fn score_increase(&self) -> P::Score {
+        P::score(&self.solution) - self.old_score
+    }
+
+    fn is_improving(&self) -> bool {
+        self.score_increase() > 0.into()
+    }
+
+    fn into_solution(&self) -> P::Solution {
+        self.solution.clone()
+    }
+}
+
+impl<P, N> MoveNeighborhood<P> for AsMoveNeighborhood<N>
+where
+    P: Problem,
+    P::Score: Ring,
+    P::Solution: Clone,
+    N: Neighborhood<P>,
+{
+    type Move<'c> = TrivialMove<P>
+    where
+        P: 'c;
+
+    type Iter<'c> = <Vec::<Self::Move<'c>> as IntoIterator>::IntoIter
+    where
+        P: 'c;
+
+    fn moves_iter<'c, 'p: 'c>(
+        problem: &'p P,
+        current: &'c <P as Problem>::Solution,
+    ) -> Self::Iter<'c> {
+        let old_score = P::score(&current);
+        N::neighbors_iter(problem, current)
+            .map(|solution| TrivialMove {
+                old_score,
+                solution,
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+    }
+}
+
 pub trait InitialSolution<P: Problem> {
     fn make_intial_solution(&mut self, instance: &P) -> P::Solution;
 }

@@ -16,7 +16,7 @@ use gtsp::{
     multistart::Multistart,
     tabusearch::TabuSearch,
     termination::Termination,
-    ImproveInitial, ImprovementHeuristic, MetaHeuristic,
+    AsMoveNeighborhood, ImproveInitial, ImprovementHeuristic, MetaHeuristic,
 };
 use rand::{rngs::SmallRng, SeedableRng as _};
 use serde_derive::Serialize;
@@ -123,7 +123,10 @@ fn main() -> anyhow::Result<()> {
 
         macro_rules! run_all {
             ($name: expr, $neigh: ty) => {
-                run_ms!($name, $neigh);
+                run_all!($name, $neigh, $neigh);
+            };
+            ($name: expr, $move_neigh: ty, $neigh: ty) => {
+                run_ms!($name, $move_neigh);
                 run_tabu!($name, $neigh);
             };
         }
@@ -131,7 +134,11 @@ fn main() -> anyhow::Result<()> {
         for _ in 0..10 {
             run_all!("2-Opt", TwoOptNeighborhood);
             run_all!("Swap", SwapNeighborhood);
-            run_tabu!("Inserts", InsertsNeighborhood);
+            run_all!(
+                "Inserts",
+                AsMoveNeighborhood<InsertsNeighborhood>,
+                InsertsNeighborhood
+            );
             run!(
                 "MS Cycle",
                 Multistart::new(Termination::after_duration(d), || {
