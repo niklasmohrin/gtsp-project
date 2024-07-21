@@ -13,8 +13,7 @@ solutions_path = args[1]
 results_path = args[2]
 out_path = args[3]
 
-results = read.csv(results_path, header=TRUE, sep=",")
-results = results %>%
+results = read.csv(results_path, header=TRUE, sep=",") %>%
   mutate(problem = sub("^instances/", "", problem)) %>%
   group_by(problem, name) %>%
   group_modify(function(data, keys) {
@@ -22,7 +21,7 @@ results = results %>%
   }) %>%
   mutate(problem = sub(".txt", "", problem)) %>%
   summarise(
-    mean_weight_err = mean((weight - opt)/ opt),
+    mean_weight_err = mean((weight - opt) / opt),
     std_weight_err = sd((weight - opt) / opt),
   )
 
@@ -34,4 +33,4 @@ ggplot(data = results, aes(x = name, y = mean_weight_err, fill = as.factor(probl
   theme_minimal() +
   theme(text = element_text(size = 10)) +
   scale_x_discrete(labels = label_wrap(10))
-ggsave(out_path, width = 30, height = 10, units = "cm")
+ggsave(out_path, width = 50, height = 15, units = "cm")
