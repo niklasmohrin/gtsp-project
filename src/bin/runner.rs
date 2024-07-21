@@ -8,7 +8,9 @@ use std::{
 use gtsp::{
     chain::Chain,
     gtsp::{
-        neighborhoods::{ClusterOptimization, SwapNeighborhood, TwoOptNeighborhood},
+        neighborhoods::{
+            ClusterOptimization, InsertsNeighborhood, SwapNeighborhood, TwoOptNeighborhood,
+        },
         GtspProblem, RandomSolution,
     },
     localsearch::LocalSearch,
@@ -41,7 +43,7 @@ fn main() -> anyhow::Result<()> {
         let problem_name = path + suffix;
         eprintln!("Problem: {problem_name}");
 
-        let d = Duration::from_secs(1);
+        let d = Duration::from_millis(100);
 
         macro_rules! run {
             ($name: expr, $m: expr) => {
@@ -51,7 +53,12 @@ fn main() -> anyhow::Result<()> {
                     weight: {
                         let start = Instant::now();
                         let res = $m.run(&problem).weight();
-                        eprintln!("  {} took {:?} over the planned duration of {:?}", $name, start.elapsed() - d, d);
+                        eprintln!(
+                            "  {} took {:?} over the planned duration of {:?}",
+                            $name,
+                            start.elapsed() - d,
+                            d
+                        );
                         res
                     },
                 })
@@ -145,6 +152,12 @@ fn main() -> anyhow::Result<()> {
                 of_random!(with_co!(TabuSearch::<SwapNeighborhood, 500>::new(
                     Termination::after_duration(d)
                 )))
+            )?;
+            run!(
+                "Tabu Inserts (L=500)",
+                of_random!(TabuSearch::<InsertsNeighborhood, 500>::new(
+                    Termination::after_duration(d)
+                ))
             )?;
         }
     }
