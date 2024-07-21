@@ -78,85 +78,54 @@ fn main() -> anyhow::Result<()> {
             };
         }
 
+        macro_rules! run_ms {
+            ($name: expr, $neigh: ty) => {
+                run!(
+                    concat!("MS LS ", $name),
+                    Multistart::new(Termination::after_duration(d), || of_random!(
+                        LocalSearch::<$neigh>::new(Termination::never())
+                    ))
+                )?;
+                run!(
+                    concat!("MS LS ", $name, " with CO"),
+                    Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
+                        LocalSearch::<$neigh>::new(Termination::never())
+                    )))
+                )?;
+            };
+        }
+        macro_rules! run_tabu {
+            ($name: expr, $neigh: ty) => {
+                run_tabu!($name, $neigh, 100);
+                run_tabu!($name, $neigh, 500);
+            };
+            ($name: expr, $neigh: ty, $len: expr) => {
+                run!(
+                    concat!("Tabu ", $name, " (L=", $len, ")"),
+                    of_random!(TabuSearch::<$neigh, $len>::new(
+                        Termination::after_duration(d)
+                    ))
+                )?;
+                run!(
+                    concat!("Tabu ", $name, " (L=", $len, ") with CO"),
+                    of_random!(with_co!(TabuSearch::<$neigh, $len>::new(
+                        Termination::after_duration(d)
+                    )))
+                )?;
+            };
+        }
+
+        macro_rules! run_all {
+            ($name: expr, $neigh: ty) => {
+                run_ms!($name, $neigh);
+                run_tabu!($name, $neigh);
+            };
+        }
+
         for _ in 0..10 {
-            run!(
-                "MS LS 2-Opt",
-                Multistart::new(Termination::after_duration(d), || of_random!(
-                    LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
-                ))
-            )?;
-            run!(
-                "MS LS 2-Opt with CO",
-                Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
-                    LocalSearch::<TwoOptNeighborhood>::new(Termination::never())
-                )))
-            )?;
-            run!(
-                "MS LS Swap",
-                Multistart::new(Termination::after_duration(d), || of_random!(
-                    LocalSearch::<SwapNeighborhood>::new(Termination::never())
-                ))
-            )?;
-            run!(
-                "MS LS Swap with CO",
-                Multistart::new(Termination::after_duration(d), || of_random!(with_co!(
-                    LocalSearch::<SwapNeighborhood>::new(Termination::never())
-                )))
-            )?;
-            run!(
-                "Tabu 2-Opt (L=100)",
-                of_random!(TabuSearch::<TwoOptNeighborhood, 100>::new(
-                    Termination::after_duration(d)
-                ))
-            )?;
-            run!(
-                "Tabu 2-Opt (L=100) with CO",
-                of_random!(with_co!(TabuSearch::<TwoOptNeighborhood, 100>::new(
-                    Termination::after_duration(d)
-                )))
-            )?;
-            run!(
-                "Tabu Swap (L=100)",
-                of_random!(TabuSearch::<SwapNeighborhood, 100>::new(
-                    Termination::after_duration(d)
-                ))
-            )?;
-            run!(
-                "Tabu Swap (L=100) with CO",
-                of_random!(with_co!(TabuSearch::<SwapNeighborhood, 100>::new(
-                    Termination::after_duration(d)
-                )))
-            )?;
-            run!(
-                "Tabu 2-Opt (L=500)",
-                of_random!(TabuSearch::<TwoOptNeighborhood, 500>::new(
-                    Termination::after_duration(d)
-                ))
-            )?;
-            run!(
-                "Tabu 2-Opt (L=500) with CO",
-                of_random!(with_co!(TabuSearch::<TwoOptNeighborhood, 500>::new(
-                    Termination::after_duration(d)
-                )))
-            )?;
-            run!(
-                "Tabu Swap (L=500)",
-                of_random!(TabuSearch::<SwapNeighborhood, 500>::new(
-                    Termination::after_duration(d)
-                ))
-            )?;
-            run!(
-                "Tabu Swap (L=500) with CO",
-                of_random!(with_co!(TabuSearch::<SwapNeighborhood, 500>::new(
-                    Termination::after_duration(d)
-                )))
-            )?;
-            run!(
-                "Tabu Inserts (L=500)",
-                of_random!(TabuSearch::<InsertsNeighborhood, 500>::new(
-                    Termination::after_duration(d)
-                ))
-            )?;
+            run_all!("2-Opt", TwoOptNeighborhood);
+            run_all!("Swap", SwapNeighborhood);
+            run_tabu!("Inserts", InsertsNeighborhood);
         }
     }
 
