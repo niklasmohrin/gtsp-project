@@ -192,13 +192,12 @@ impl<G: Rng> RandomSolution<G> {
 
 impl<G: Rng, R: Ring> InitialSolution<GtspProblem<R>> for RandomSolution<G> {
     fn make_intial_solution(&mut self, instance: &GtspProblem<R>) -> Solution<R> {
-        Solution::new(
-            instance,
-            instance
-                .clusters
-                .iter()
-                .map(|c| *c.choose(&mut self.rng).expect("cluster was empty"))
-                .collect(),
-        )
+        let mut tour: Vec<_> = instance
+            .clusters
+            .iter()
+            .map(|c| *c.choose(&mut self.rng).expect("cluster was empty"))
+            .collect();
+        tour.shuffle(&mut self.rng);
+        Solution::new(instance, tour)
     }
 }
