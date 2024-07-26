@@ -17,7 +17,7 @@
     {
       packages.${system} = rec {
         runner = pkgs.rustPlatform.buildRustPackage {
-          pname = "gtsp-runner";
+          pname = "runner";
           version = "0.0.1";
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
