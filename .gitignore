@@ -2,3 +2,7 @@
 *.zip
 instances/
 solutions/
+results*.csv
+plots*.pdf
+Rplots.pdf
+result
